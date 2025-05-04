@@ -4,7 +4,7 @@ namespace seesharpulator.lib.calculator
 {
     public class Calculator
     {
-        private readonly string[] operations = ["+", "-", "*", "/", "sqrt", "pow", "!"];
+        private readonly string[] operations = ["+", "-", "*", "/", "sqrt", "pow"];
         private readonly List<Calculation> history = [];
         private bool running = true;
         private readonly List<decimal> carriedOperands = [];
@@ -33,6 +33,7 @@ namespace seesharpulator.lib.calculator
             Console.WriteLine("Enter your operands, separated by a single space");
             var input = Console.ReadLine() ?? throw new NullInputException();
             var stringOperands = input.Split(" ");
+            if (stringOperands.Length == 0) throw new NullInputException();
             var operands = new decimal[stringOperands.Length];
             for (int i = 0; i < stringOperands.Length; i++)
             {
@@ -52,6 +53,8 @@ namespace seesharpulator.lib.calculator
                 "-" => new SubCalculation(operands),
                 "*" => new MultCalculation(operands),
                 "/" => new DivCalculation(operands),
+                "sqrt" => new RootCalculation(operands),
+                "pow" => new PowCalculation(operands),
                 _ => throw new InvalidInputException(op),
             };
         }
