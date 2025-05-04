@@ -4,15 +4,17 @@ namespace seesharpulator.lib.calculator
 {
     public class Calculator
     {
-        private readonly string[] operations = ["+", "-", "*", "/"];
+        private readonly string[] operations = ["+", "-", "*", "/", "sqrt", "pow", "!"];
         private readonly List<Calculation> history = [];
         private bool running = true;
+        private List<decimal> carriedOperands = [];
 
         private static void ShowOptions()
         {
             Console.WriteLine("'calculate - run a calculation");
             Console.WriteLine("'history' - show calculation history");
             Console.WriteLine("'reset' - clear calculation history");
+            Console.WriteLine("'carry' - carry result from previous calculations to the next");
             Console.WriteLine("'quit' - exit the amazing calculator");
         }
 
@@ -28,10 +30,8 @@ namespace seesharpulator.lib.calculator
         {
             Console.WriteLine("Enter your operands, separated by a single space");
             var input = Console.ReadLine() ?? throw new NullInputException();
-            string[] stringOperands = input.Split(" ");
-            Console.WriteLine(stringOperands.Length);
-            decimal[] operands = new decimal[stringOperands.Length];
-            Console.WriteLine(operands.Length);
+            var stringOperands = input.Split(" ");
+            var operands = new decimal[stringOperands.Length];
             for (int i = 0; i < stringOperands.Length; i++)
             {
                 if (!decimal.TryParse(stringOperands[i], out operands[i]))
@@ -60,9 +60,10 @@ namespace seesharpulator.lib.calculator
             {
                 var op = GetOpFromUser();
                 var operands = GetOperandsFromUser();
-                var calculation = NewCalculation(op, operands);
+                var calculation = NewCalculation(op, [.. carriedOperands.Concat(operands)]);
                 Console.WriteLine(calculation.Format());
                 history.Add(calculation);
+                carriedOperands.Clear();
             }
             catch (NullInputException)
             {
@@ -82,10 +83,11 @@ namespace seesharpulator.lib.calculator
                 Console.WriteLine("No calculations to show");
                 return;
             }
-            foreach (Calculation calculation in history)
+            for (int i = 0; i < history.Count; i++)
             {
                 Console.WriteLine("");
-                Console.WriteLine(calculation.Format());
+                Console.WriteLine($"ID: {i}");
+                Console.WriteLine(history[i].Format());
             }
         }
 
@@ -99,6 +101,27 @@ namespace seesharpulator.lib.calculator
         {
             Console.WriteLine("Thanks for using the fantastic calculator!");
             running = false;
+        }
+
+        private void Carry()
+        {
+            try
+            {
+                Console.WriteLine("Enter the ID of the previous calculation you want to carry (shown in history)");
+                var input = Console.ReadLine() ?? throw new NullInputException();
+                if (!int.TryParse(input, out var value)) throw new InvalidInputException(input);
+                if (value < 0 || value >= history.Count) throw new InvalidInputException(input);
+                carriedOperands.Add(history[value].Calculate());
+                Console.WriteLine($"Carried {history[value].Calculate()} over");
+            }
+            catch (NullInputException)
+            {
+                Console.WriteLine("User input was null, carry over cancelled");
+            }
+            catch (InvalidInputException e)
+            {
+                Console.WriteLine($"{e.Input} is not a valid ID, carry over cancelled");
+            }
         }
 
         public void Start()
@@ -124,6 +147,9 @@ namespace seesharpulator.lib.calculator
                         break;
                     case "options":
                         ShowOptions();
+                        break;
+                    case "carry":
+                        Carry();
                         break;
                     default:
                         Console.WriteLine("Type 'options' for a list of commands");
