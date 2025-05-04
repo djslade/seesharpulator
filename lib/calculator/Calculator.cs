@@ -7,7 +7,8 @@ namespace seesharpulator.lib.calculator
         private readonly string[] operations = ["+", "-", "*", "/", "sqrt", "pow", "!"];
         private readonly List<Calculation> history = [];
         private bool running = true;
-        private List<decimal> carriedOperands = [];
+        private readonly List<decimal> carriedOperands = [];
+        private int totalUses;
 
         private static void ShowOptions()
         {
@@ -15,6 +16,7 @@ namespace seesharpulator.lib.calculator
             Console.WriteLine("'history' - show calculation history");
             Console.WriteLine("'reset' - clear calculation history");
             Console.WriteLine("'carry' - carry result from previous calculations to the next");
+            Console.WriteLine("'total' - see how many times the calculator has been used");
             Console.WriteLine("'quit' - exit the amazing calculator");
         }
 
@@ -62,6 +64,7 @@ namespace seesharpulator.lib.calculator
                 var operands = GetOperandsFromUser();
                 var calculation = NewCalculation(op, [.. carriedOperands.Concat(operands)]);
                 Console.WriteLine(calculation.Format());
+                totalUses++;
                 history.Add(calculation);
                 carriedOperands.Clear();
             }
@@ -124,6 +127,12 @@ namespace seesharpulator.lib.calculator
             }
         }
 
+        private void ShowTotal()
+        {
+            var timeCase = totalUses == 1 ? "time" : "times";
+            Console.WriteLine($"The calculate has been used {totalUses} {timeCase}");
+        }
+
         public void Start()
         {
             Console.WriteLine("Welcome to the famous calculator");
@@ -150,6 +159,9 @@ namespace seesharpulator.lib.calculator
                         break;
                     case "carry":
                         Carry();
+                        break;
+                    case "total":
+                        ShowTotal();
                         break;
                     default:
                         Console.WriteLine("Type 'options' for a list of commands");
