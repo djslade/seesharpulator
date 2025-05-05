@@ -1,6 +1,4 @@
-using seesharpulator.lib.calculation;
-
-namespace seesharpulator.lib.calculator
+namespace seesharpulator.lib
 {
     public class Calculator
     {
